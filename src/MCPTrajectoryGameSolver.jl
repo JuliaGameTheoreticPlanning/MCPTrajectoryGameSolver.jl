@@ -26,6 +26,6 @@ using ChainRulesCore: ChainRulesCore
 include("solver_setup.jl")
 include("solve.jl")
 
-# TODO: think about the public API
+export Solver
 
 end # module MCPTrajectoryGameSolver
