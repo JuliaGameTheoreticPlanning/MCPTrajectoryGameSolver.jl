@@ -139,7 +139,6 @@ function main()
     horizon = 2
     context = [1, 1]
     initial_state = mortar([[1.0, 0, 0, 0], [-1.0, 0, 0, 0]])
-    rng = Random.MersenneTwister(1)
 
     local solver, solver_wrong_context
 
@@ -159,7 +158,7 @@ function main()
             strategy =
                 TrajectoryGamesBase.solve_trajectory_game!(solver, game, initial_state; context)
             forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
-            backward_pass_sanity(; solver, game, initial_state, rng)
+            backward_pass_sanity(; solver, game, initial_state)
         end
     end
 end
@@ -214,7 +213,13 @@ function forward_pass_sanity(; solver, game, initial_state, context, horizon, st
     end
 end
 
-function backward_pass_sanity(; solver, game, initial_state, rng)
+function backward_pass_sanity(;
+    solver,
+    game,
+    initial_state,
+    rng = Random.MersenneTwister(1),
+    θs = [randn(rng, 2) for _ in 1:10],
+)
     @testset "backward pass sanity" begin
         function loss(θ)
             Zygote.forwarddiff(θ) do θ
@@ -232,8 +237,6 @@ function backward_pass_sanity(; solver, game, initial_state, rng)
                 end
             end
         end
-
-        θs = [randn(rng, 2) for _ in 1:10]
 
         for θ in θs
             ∇_zygote = Zygote.gradient(loss, θ) |> only
