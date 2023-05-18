@@ -1,19 +1,8 @@
-struct Solver{T}
-    """
-    mcp_problem_representation
-    dimensions
-
-    Note: Just a NamedTuple for prototyping
-    """
-    fields::T
-end
-
-function Base.getproperty(solver::Solver, name::Symbol)
-    if name === :fields
-        Base.getfield(solver, name)
-    else
-        Base.getproperty(solver.fields, name)
-    end
+struct Solver{T1, T2}
+    "The problem representation of the game via ParametricMCPs.ParametricMCP"
+    mcp_problem_representation::T1
+    "A named tuple collecting all the problem dimension infos"
+    dimensions::T2
 end
 
 function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_sensitivities = true)
@@ -173,7 +162,7 @@ function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_se
         compute_sensitivities,
     )
 
-    Solver((; mcp_problem_representation, dimensions))
+    Solver(mcp_problem_representation, dimensions)
 end
 
 function flatten_trajetory_per_player(trajectory)
