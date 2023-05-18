@@ -13,6 +13,9 @@ using Symbolics: Symbolics
 using ParametricMCPs: ParametricMCPs
 using BlockArrays: BlockArrays, mortar, blocks, eachblock
 
+# TODO: make this an optional dependency
+using Makie
+
 include("utils.jl")
 include("solver_setup.jl")
 include("solve.jl")

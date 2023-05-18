@@ -123,3 +123,8 @@ end
 function (strategy::OpenLoopStrategy)(state, time)
     strategy.us[time]
 end
+
+function Makie.convert_arguments(::Type{<:Makie.Lines}, γ::OpenLoopStrategy)
+    traj_points = [Makie.Point2f(x[1:2]) for x in γ.xs]
+    (traj_points,)
+end
