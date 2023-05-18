@@ -1,0 +1,7 @@
+[deps]
+BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TrajectoryGamesBase = "ac1ac542-73eb-4349-ae1b-660ab3609574"
+TrajectoryGamesExamples = "ff3fa34c-8d8f-519c-b5bc-31760c52507a"

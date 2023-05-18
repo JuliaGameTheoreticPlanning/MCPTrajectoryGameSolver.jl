@@ -9,9 +9,12 @@ function TrajectoryGamesBase.solve_trajectory_game!(
     parametric_mcp_solve_options = (;),
 )
     length(shared_constraint_premultipliers) == num_players(game) ||
-        error("Must provide one constraint multiplier per player")
-    length(context) == solver.dimensions.context ||
-        error("The context state must have the same dimension as the solver's context state")
+        throw(ArgumentError("Must provide one constraint multiplier per player"))
+    length(context) == solver.dimensions.context || throw(
+        ArgumentError(
+            "The context state must have the same dimension as the solver's context state",
+        ),
+    )
 
     θ = compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
 
