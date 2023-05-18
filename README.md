@@ -10,9 +10,17 @@ This package provides a thin wrapper around the [ParametricMCPs.jl](https://gith
 By exploiting the implicit function theorem, game solutions can be differentiated with respect to the game parameters.
 This sensitivity information can be used to fit a game-theoretic model to observed behavior as we explore in our work [Learning to Play Trajectory Games Against Opponents with Unknown Objectives](https://arxiv.org/pdf/2211.13779.pdf).
 
+## Quickstart
+
+> :warning: This package is not yet registered.
+> 
+> To install it, run `] add https://github.com/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl`.
+
+This README will be expanded to include more concrete usage instructions. Until then, please refer to the `test/runtests.jl` file as a source of implicit documentation.
+
 ## Citiation
 
-![](https://xinjie-liu.github.io/assets/img/liu2023ral_teaser.png)
+[![](https://xinjie-liu.github.io/assets/img/liu2023ral_teaser.png)](https://arxiv.org/pdf/2211.13779.pdf)
 
 This package was originally developed as part of the paper [Learning to Play Trajectory Games Against Opponents with Unknown Objectives](https://arxiv.org/pdf/2211.13779.pdf).
 Please cite this paper if you use this package in your research.
