@@ -10,10 +10,7 @@ using Zygote: Zygote
 using FiniteDiff: FiniteDiff
 using Random: Random
 
-include("../examples/Demo.jl")
-
-# integration test of the demo
-Demo.demo()
+include("Demo.jl")
 
 function isfeasible(game::TrajectoryGamesBase.TrajectoryGame, trajectory; tol=1e-4)
     isfeasible(game.dynamics, trajectory; tol) &&

@@ -16,7 +16,14 @@ This sensitivity information can be used to fit a game-theoretic model to observ
 > 
 > To install it, run `] add https://github.com/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl`.
 
-This README will be expanded to include more concrete usage instructions. Until then, please refer to the `test/runtests.jl` file as a source of implicit documentation.
+For a full example of how to use this package, please consult the demo in `test/Demo.jl`:
+
+```julia
+using TestEnv # install globally with `] add TestEnv` if you don't have this
+TestEnv.activate()
+include("test/Demo.jl")
+Demo.demo()
+```
 
 ## Citiation
 
