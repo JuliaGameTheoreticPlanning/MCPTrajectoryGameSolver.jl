@@ -29,6 +29,16 @@ function get_constraints_from_box_bounds(bounds)
     end
 end
 
+"""
+Like Symbolics.scalarize but robusutly handle empty arrays.
+"""
+function scalarize(num)
+    if length(num) == 0
+        return Symbolics.Num[]
+    end
+    Symbolics.scalarize(num)
+end
+
 # TODO: some of these tools should probably be moved to base
 """
 Convert a joint trajectory into a collection of single-player trajectories.
@@ -37,13 +47,13 @@ The inverse of `stack_trajectories`.
 """
 function unstack_trajectory(
     trajectory,
-    player_indices=1:BlockArrays.blocklength(trajectory.us[begin]),
+    player_indices = 1:BlockArrays.blocklength(trajectory.us[begin]),
 )
     (; xs, us) = trajectory
     map(player_indices) do ii
         xs_single = map(x -> x[BlockArrays.Block(ii)], xs)
         us_single = map(u -> u[BlockArrays.Block(ii)], us)
-        (; xs=xs_single, us=us_single)
+        (; xs = xs_single, us = us_single)
     end
 end
 
@@ -83,16 +93,13 @@ The inverse of `flatten_trajectory`.
 function unflatten_trajectory(z, state_dimension, control_dimension)
     Z = reshape(z, state_dimension + control_dimension, :)
     X = @view Z[1:state_dimension, :]
-    U = @view Z[(state_dimension+1):end, :]
+    U = @view Z[(state_dimension + 1):end, :]
     xs = eachcol(X) .|> collect
     us = eachcol(U) .|> collect
     (; xs, us)
 end
 
-
-
 # TODO: move these to TrajectoryGamesBase
-
 
 function TrajectoryGamesBase.state_dim(dynamics::TrajectoryGamesBase.ProductDynamics, player_index)
     TrajectoryGamesBase.state_dim(dynamics.subsystems[player_index])

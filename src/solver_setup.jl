@@ -16,20 +16,18 @@ function Base.getproperty(solver::Solver, name::Symbol)
     end
 end
 
-function Solver(game::TrajectoryGame, horizon;
-    context_state_dimension=0,
-    compute_sensitivies=false
+function Solver(
+    game::TrajectoryGame,
+    horizon;
+    context_state_dimension = 0,
+    compute_sensitivies = false,
 )
-
     dimensions = let
-        state_blocks = [
-            state_dim(game.dynamics, player_index)
-            for player_index in 1:num_players(game)
-        ]
+        state_blocks =
+            [state_dim(game.dynamics, player_index) for player_index in 1:num_players(game)]
         state = sum(state_blocks)
-        control_blocks = [
-            control_dim(game.dynamics, player_index) for player_index in 1:num_players(game)
-        ]
+        control_blocks =
+            [control_dim(game.dynamics, player_index) for player_index in 1:num_players(game)]
         control = sum(control_blocks)
         (; state_blocks, state, control_blocks, control)
     end
@@ -42,14 +40,14 @@ function Solver(game::TrajectoryGame, horizon;
     end
 
     xs_symbolic = let
-        Symbolics.@variables(X[1:(dimensions.state*horizon)]) |>
+        Symbolics.@variables(X[1:(dimensions.state * horizon)]) |>
         only |>
         scalarize |>
         to_vector_of_blockvectors(dimensions.state_blocks)
     end
 
     us_symbolic = let
-        Symbolics.@variables(U[1:(dimensions.control*horizon)]) |>
+        Symbolics.@variables(U[1:(dimensions.control * horizon)]) |>
         only |>
         scalarize |>
         to_vector_of_blockvectors(dimensions.control_blocks)
@@ -62,7 +60,7 @@ function Solver(game::TrajectoryGame, horizon;
 
     equality_constraints_symbolic = let
         dynamics_constraints = mapreduce(vcat, 2:horizon) do t
-            xs_symbolic[t] - game.dynamics(xs_symbolic[t-1], us_symbolic[t-1], t - 1)
+            xs_symbolic[t] - game.dynamics(xs_symbolic[t - 1], us_symbolic[t - 1], t - 1)
         end
         initial_state_constraints = xs_symbolic[begin] - initial_state_symbolic
         [dynamics_constraints; initial_state_constraints]
@@ -72,7 +70,10 @@ function Solver(game::TrajectoryGame, horizon;
         environment_constraints =
         # Note: We unstack trajectories here so that we add environment constraints on the sub-state of each player.
         # TODO: If `get_constraints` were to also receive the dynamics, it could handle this special case internally
-            mapreduce(vcat, pairs(unstack_trajectory((; xs=xs_symbolic, us=us_symbolic)))) do (ii, trajectory)
+            mapreduce(
+                vcat,
+                pairs(unstack_trajectory((; xs = xs_symbolic, us = us_symbolic))),
+            ) do (ii, trajectory)
                 environment_constraints_ii = get_constraints(game.env, ii)
                 # Note: we don't constraint the first state because we have no control authority over that anyway
                 mapreduce(environment_constraints_ii, vcat, trajectory.xs[2:end])
@@ -104,27 +105,46 @@ function Solver(game::TrajectoryGame, horizon;
     else
         # Note: we don't constraint the first state because we have no control authority over that anyway
         coupling_constraints_symbolic =
-            game.coupling_constraints(xs_symbolic[(begin+1):end], us_symbolic)
+            game.coupling_constraints(xs_symbolic[(begin + 1):end], us_symbolic)
     end
 
     # set up the duals for all constraints
     # private constraints
-    μ_private_symbolic = Symbolics.@variables(μ[1:length(equality_constraints_symbolic)]) |> only |> scalarize
-    λ_private_symbolic = Symbolics.@variables(λ_private[1:length(inequality_constraints_symoblic)]) |> only |> scalarize
+    μ_private_symbolic =
+        Symbolics.@variables(μ[1:length(equality_constraints_symbolic)]) |> only |> scalarize
+    λ_private_symbolic =
+        Symbolics.@variables(λ_private[1:length(inequality_constraints_symoblic)]) |>
+        only |>
+        scalarize
     # shared constraints
-    λ_shared_symbolic = Symbolics.@variables(λ_shared[1:length(coupling_constraints_symbolic)]) |> only |> scalarize
+    λ_shared_symbolic =
+        Symbolics.@variables(λ_shared[1:length(coupling_constraints_symbolic)]) |> only |> scalarize
     # multiplier scaling per player as a runtime parameter
     # TODO: technically, we could have this scaling for *every* element of the constraint and
     # actually every constraint but for now let's keep it simple
     shared_constraint_premultipliers_symbolic =
         Symbolics.@variables(γ_scaling[1:num_players(game)]) |> only |> scalarize
 
+    private_variables_per_player_symbolic =
+        flatten_trajetory_per_player((; xs = xs_symbolic, us = us_symbolic))
 
-    private_variables_per_player_symbolic = flatten_trajetory_per_player((; xs=xs_symbolic, us=us_symbolic))
+    ∇lagragian_per_player_symbolic = map(
+        cost_per_player_symbolic,
+        private_variables_per_player_symbolic,
+        shared_constraint_premultipliers_symbolic,
+    ) do cost_ii, τ_ii, γ_ii
+        # Note: this "Lagrangian" for player ii is *not* exactly their Lagrangian because it contains private constraints of the opponent.
+        #       *However*: after taking the gradient w.r.t player ii's private variables, those terms will disappear
+        L_ii =
+            cost_ii + μ_private_symbolic' * equality_constraints_symbolic -
+            λ_private_symbolic' * inequality_constraints_symoblic -
+            λ_shared_symbolic' * coupling_constraints_symbolic * γ_ii
+
+        Symbolics.gradient(L_ii, τ_ii)
+    end
 end
 
 function flatten_trajetory_per_player(trajectory)
     trajectory_per_player = unstack_trajectory(trajectory)
-    return trajectory_per_player
     [flatten_trajectory(trajectory) for trajectory in trajectory_per_player]
 end
