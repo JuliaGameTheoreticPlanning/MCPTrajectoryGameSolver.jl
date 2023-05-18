@@ -1,6 +1,6 @@
 module MCPTrajectoryGameSolver
 
-using TrajectoryGamesBase: TrajectoryGamesBase, TrajectoryGame, state_dim, control_dim, num_players
+using TrajectoryGamesBase: control_bounds, control_dim, get_constraints, num_players, state_bounds, state_dim, TrajectoryGame, TrajectoryGamesBase
 using Symbolics: Symbolics, scalarize
 using ParametricMCPs: ParametricMCPs
 using BlockArrays: BlockArrays, mortar, blocks, eachblock
