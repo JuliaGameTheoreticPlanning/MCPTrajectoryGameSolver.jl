@@ -18,7 +18,8 @@ function TrajectoryGamesBase.solve_trajectory_game!(
     raw_solution = ParametricMCPs.solve(
         solver.mcp_problem_representation,
         θ;
-        #initial_guess,
+        initial_guess = isnothing(initial_guess) ?
+                        generate_initial_guess(solver, game, initial_state) : initial_guess,
         parametric_mcp_solve_options...,
     )
 
@@ -42,4 +43,24 @@ function strategy_from_raw_solution(; raw_solution, game, solver)
             unflatten_trajectory(z_private, private_state_dimension, private_control_dimension)
         OpenLoopStrategy(trajectory.xs, trajectory.us)
     end |> TrajectoryGamesBase.JointStrategy
+end
+
+function generate_initial_guess(solver, game, initial_state)
+    z_initial = zeros(ParametricMCPs.get_problem_size(solver.mcp_problem_representation))
+
+    rollout_strategy =
+        map(solver.dimensions.control_blocks) do control_dimension_player_i
+            (x, t) -> zeros(control_dimension_player_i)
+        end |> TrajectoryGamesBase.JointStrategy
+
+    zero_input_trajectory = TrajectoryGamesBase.rollout(
+        game.dynamics,
+        rollout_strategy,
+        initial_state,
+        solver.dimensions.horizon,
+    )
+
+    copyto!(z_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
+
+    z_initial
 end
