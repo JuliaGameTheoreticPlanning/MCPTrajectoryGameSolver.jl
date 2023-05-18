@@ -16,7 +16,7 @@ function Base.getproperty(solver::Solver, name::Symbol)
     end
 end
 
-function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_sensitivities = false)
+function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_sensitivities = true)
     dimensions = let
         state_blocks =
             [state_dim(game.dynamics, player_index) for player_index in 1:num_players(game)]

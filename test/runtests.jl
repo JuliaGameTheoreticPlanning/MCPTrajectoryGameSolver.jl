@@ -144,12 +144,8 @@ function main()
 
     @testset "Tests" begin
         @testset "solver setup" begin
-            solver = MCPTrajectoryGameSolver.Solver(
-                game,
-                horizon;
-                context_dimension = length(context),
-                compute_sensitivities = true,
-            )
+            solver =
+                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension = length(context))
             solver_wrong_context =
                 MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension = 4)
         end
