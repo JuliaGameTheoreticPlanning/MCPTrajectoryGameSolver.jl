@@ -20,7 +20,7 @@ function Solver(
     game::TrajectoryGame,
     horizon;
     context_state_dimension = 0,
-    compute_sensitivies = false,
+    compute_sensitivities = false,
 )
     dimensions = let
         state_blocks =
@@ -142,9 +142,50 @@ function Solver(
 
         Symbolics.gradient(L_ii, τ_ii)
     end
+
+    # set up the full KKT system as an MCP
+    f_symbolic = [
+        ∇lagragian_per_player_symbolic...
+        equality_constraints_symbolic
+        inequality_constraints_symoblic
+        coupling_constraints_symbolic
+    ]
+    z_symbolic = [
+        private_variables_per_player_symbolic...
+        μ_private_symbolic
+        λ_private_symbolic
+        λ_shared_symbolic
+    ]
+    θ_symbolic = compose_parameter_vector(;
+        initial_state = initial_state_symbolic,
+        context_state = context_state_symbolic,
+    )
+
+    number_of_primal_decision_variables =
+        sum(length(p) for p in private_variables_per_player_symbolic)
+    lower_bounds = [
+        fill(-Inf, number_of_primal_decision_variables + length(equality_constraints_symbolic))
+        fill(0.0, length(inequality_constraints_symoblic) + length(coupling_constraints_symbolic))
+    ]
+    upper_bounds = fill(Inf, length(lower_bounds))
+
+    mcp_problem_representation = ParametricMCPs.ParametricMCP(
+        f_symbolic,
+        z_symbolic,
+        θ_symbolic,
+        lower_bounds,
+        upper_bounds;
+        compute_sensitivities,
+    )
+
+    Solver((; mcp_problem_representation, dimensions))
 end
 
 function flatten_trajetory_per_player(trajectory)
     trajectory_per_player = unstack_trajectory(trajectory)
     [flatten_trajectory(trajectory) for trajectory in trajectory_per_player]
+end
+
+function compose_parameter_vector(; initial_state, context_state)
+    [initial_state; context_state]
 end
