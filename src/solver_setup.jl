@@ -153,6 +153,7 @@ function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_se
     θ_symbolic = compose_parameter_vector(;
         initial_state = initial_state_symbolic,
         context = context_symbolic,
+        shared_constraint_premultipliers = shared_constraint_premultipliers_symbolic,
     )
 
     number_of_primal_decision_variables =
@@ -180,6 +181,6 @@ function flatten_trajetory_per_player(trajectory)
     [flatten_trajectory(trajectory) for trajectory in trajectory_per_player]
 end
 
-function compose_parameter_vector(; initial_state, context)
-    [initial_state; context]
+function compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
+    [initial_state; context; shared_constraint_premultipliers]
 end

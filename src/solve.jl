@@ -2,18 +2,18 @@ function TrajectoryGamesBase.solve_trajectory_game!(
     solver,
     game,
     initial_state;
-    shared_constraint_premultipliers_symbolic = ones(num_players(game)),
+    shared_constraint_premultipliers = ones(num_players(game)),
     context = Float64[],
     # TODO: also provide logic for generating a good initial guess if the user has now provided anything
     initial_guess = nothing,
     parametric_mcp_solve_options = (;),
 )
-    length(shared_constraint_premultipliers_symbolic) == num_players(game) ||
+    length(shared_constraint_premultipliers) == num_players(game) ||
         error("Must provide one constraint multiplier per player")
     length(context) == solver.dimensions.context ||
         error("The context state must have the same dimension as the solver's context state")
 
-    θ = compose_parameter_vector(; initial_state, context)
+    θ = compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
 
     raw_solution = ParametricMCPs.solve(
         solver.mcp_problem_representation,
