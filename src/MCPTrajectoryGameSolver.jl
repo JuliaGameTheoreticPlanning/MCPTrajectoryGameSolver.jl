@@ -15,6 +15,7 @@ using BlockArrays: BlockArrays, mortar, blocks, eachblock
 
 include("utils.jl")
 include("solver_setup.jl")
+include("solve.jl")
 
 # TODO: think about the public API
 

@@ -16,12 +16,7 @@ function Base.getproperty(solver::Solver, name::Symbol)
     end
 end
 
-function Solver(
-    game::TrajectoryGame,
-    horizon;
-    context_state_dimension = 0,
-    compute_sensitivities = false,
-)
+function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_sensitivities = false)
     dimensions = let
         state_blocks =
             [state_dim(game.dynamics, player_index) for player_index in 1:num_players(game)]
@@ -29,7 +24,7 @@ function Solver(
         control_blocks =
             [control_dim(game.dynamics, player_index) for player_index in 1:num_players(game)]
         control = sum(control_blocks)
-        (; state_blocks, state, control_blocks, control)
+        (; state_blocks, state, control_blocks, control, context = context_dimension, horizon)
     end
 
     initial_state_symbolic = let
@@ -53,10 +48,9 @@ function Solver(
         to_vector_of_blockvectors(dimensions.control_blocks)
     end
 
-    context_state_symbolic =
-        Symbolics.@variables(context[1:context_state_dimension]) |> only |> scalarize
+    context_symbolic = Symbolics.@variables(context[1:context_dimension]) |> only |> scalarize
 
-    cost_per_player_symbolic = game.cost(xs_symbolic, us_symbolic, context_state_symbolic)
+    cost_per_player_symbolic = game.cost(xs_symbolic, us_symbolic, context_symbolic)
 
     equality_constraints_symbolic = let
         dynamics_constraints = mapreduce(vcat, 2:horizon) do t
@@ -158,7 +152,7 @@ function Solver(
     ]
     θ_symbolic = compose_parameter_vector(;
         initial_state = initial_state_symbolic,
-        context_state = context_state_symbolic,
+        context = context_symbolic,
     )
 
     number_of_primal_decision_variables =
@@ -186,6 +180,6 @@ function flatten_trajetory_per_player(trajectory)
     [flatten_trajectory(trajectory) for trajectory in trajectory_per_player]
 end
 
-function compose_parameter_vector(; initial_state, context_state)
-    [initial_state; context_state]
+function compose_parameter_vector(; initial_state, context)
+    [initial_state; context]
 end

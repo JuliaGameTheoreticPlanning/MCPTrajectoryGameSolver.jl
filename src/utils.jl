@@ -112,3 +112,14 @@ end
 function TrajectoryGamesBase.control_dim(game, player_index)
     TrajectoryGamesBase.control_dim(game.dynamics, player_index)
 end
+
+#=== OpenLoopStrategy ===#
+
+struct OpenLoopStrategy{T1,T2}
+    xs::T1
+    us::T2
+end
+
+function (strategy::OpenLoopStrategy)(state, time)
+    strategy.us[time]
+end
