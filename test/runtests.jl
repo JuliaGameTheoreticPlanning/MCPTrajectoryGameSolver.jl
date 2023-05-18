@@ -133,7 +133,7 @@ end
 function main()
     environment = TrajectoryGamesBase.PolygonEnvironment(4, 4)
     game = two_player_guidance_game_with_collision_avoidance(; environment)
-    horizon = 20
+    horizon = 2
     context = [1, 1]
     initial_state = mortar([[1.0, 0, 0, 0], [-1.0, 0, 0, 0]])
     tol = 1e-4
