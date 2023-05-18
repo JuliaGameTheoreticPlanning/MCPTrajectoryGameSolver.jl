@@ -1,7 +1,7 @@
 # MCPTrajectoryGameSolver
 
 [![CI](https://github.com/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl/branch/main/graph/badge.svg?token=knLJ9hVfeO)](https://codecov.io/gh/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl)
+[![codecov](https://codecov.io/gh/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl/branch/main/graph/badge.svg?token=C48T44SCP2)](https://codecov.io/gh/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
 
 This package provides a thin wrapper around the [ParametricMCPs.jl](https://github.com/lassepe/ParametricMCPs.jl) package to solve trajectory games from
