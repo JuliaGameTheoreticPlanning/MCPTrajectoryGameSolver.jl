@@ -4,7 +4,6 @@ function TrajectoryGamesBase.solve_trajectory_game!(
     initial_state;
     shared_constraint_premultipliers = ones(num_players(game)),
     context = Float64[],
-    # TODO: also provide logic for generating a good initial guess if the user has now provided anything
     initial_guess = nothing,
     parametric_mcp_solve_options = (;),
 )
