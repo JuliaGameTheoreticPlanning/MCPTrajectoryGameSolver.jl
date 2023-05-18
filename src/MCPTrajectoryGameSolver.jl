@@ -19,6 +19,7 @@ using Makie
 include("utils.jl")
 include("solver_setup.jl")
 include("solve.jl")
+include("visualization.jl")
 
 # TODO: think about the public API
 
