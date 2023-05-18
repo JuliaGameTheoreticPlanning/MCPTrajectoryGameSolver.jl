@@ -12,6 +12,7 @@ using TrajectoryGamesBase:
 using Symbolics: Symbolics
 using ParametricMCPs: ParametricMCPs
 using BlockArrays: BlockArrays, mortar, blocks, eachblock
+using ChainRulesCore: ChainRulesCore
 
 # TODO: make this an optional dependency
 using Makie

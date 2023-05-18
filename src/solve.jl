@@ -49,21 +49,23 @@ function strategy_from_raw_solution(; raw_solution, game, solver)
 end
 
 function generate_initial_guess(solver, game, initial_state)
-    z_initial = zeros(ParametricMCPs.get_problem_size(solver.mcp_problem_representation))
+    ChainRulesCore.ignore_derivatives() do
+        z_initial = zeros(ParametricMCPs.get_problem_size(solver.mcp_problem_representation))
 
-    rollout_strategy =
-        map(solver.dimensions.control_blocks) do control_dimension_player_i
-            (x, t) -> zeros(control_dimension_player_i)
-        end |> TrajectoryGamesBase.JointStrategy
+        rollout_strategy =
+            map(solver.dimensions.control_blocks) do control_dimension_player_i
+                (x, t) -> zeros(control_dimension_player_i)
+            end |> TrajectoryGamesBase.JointStrategy
 
-    zero_input_trajectory = TrajectoryGamesBase.rollout(
-        game.dynamics,
-        rollout_strategy,
-        initial_state,
-        solver.dimensions.horizon,
-    )
+        zero_input_trajectory = TrajectoryGamesBase.rollout(
+            game.dynamics,
+            rollout_strategy,
+            initial_state,
+            solver.dimensions.horizon,
+        )
 
-    copyto!(z_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
+        copyto!(z_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
 
-    z_initial
+        z_initial
+    end
 end
