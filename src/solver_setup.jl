@@ -184,3 +184,13 @@ end
 function compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
     [initial_state; context; shared_constraint_premultipliers]
 end
+
+"""
+Like Symbolics.scalarize but robusutly handle empty arrays.
+"""
+function scalarize(num)
+    if length(num) == 0
+        return Symbolics.Num[]
+    end
+    Symbolics.scalarize(num)
+end

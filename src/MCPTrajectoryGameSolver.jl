@@ -3,24 +3,28 @@ module MCPTrajectoryGameSolver
 using TrajectoryGamesBase:
     control_bounds,
     control_dim,
+    flatten_trajectory,
     get_constraints,
+    get_constraints_from_box_bounds,
     num_players,
+    OpenLoopStrategy,
+    stack_trajectories,
     state_bounds,
     state_dim,
+    to_blockvector,
+    to_vector_of_blockvectors,
     TrajectoryGame,
-    TrajectoryGamesBase
+    TrajectoryGamesBase,
+    unflatten_trajectory,
+    unstack_trajectory
+
 using Symbolics: Symbolics
 using ParametricMCPs: ParametricMCPs
 using BlockArrays: BlockArrays, mortar, blocks, eachblock
 using ChainRulesCore: ChainRulesCore
 
-# TODO: make this an optional dependency
-using Makie
-
-include("utils.jl")
 include("solver_setup.jl")
 include("solve.jl")
-include("visualization.jl")
 
 # TODO: think about the public API
 
