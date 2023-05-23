@@ -18,7 +18,7 @@ Installation is as simple as running:
 ]add MCPTrajectoryGameSolver
 ```
 
-For a full example of how to use this package, please consult the demo in `test/Demo.jl`:
+For a full example of how to use this package, please consult the demo in [`test/Demo.jl`](test/Demo.jl):
 
 ```julia
 using TestEnv # install globally with `] add TestEnv` if you don't have this
