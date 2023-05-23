@@ -12,10 +12,9 @@ This sensitivity information can be used to fit a game-theoretic model to observ
 
 ## Quickstart
 
-> :warning: This package is not yet registered.
-> 
-> - run `] add https://github.com/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl` , to install it directly from the git repoistory,
-> - clone this package (manually or via `] dev --local https://github.com/JuliaGameTheoreticPlanning/MCPTrajectoryGameSolver.jl`) if you just want to play with the demo (see below)
+Installation is as simple as running:
+
+`]add MCPTrajectoryGameSolver`
 
 For a full example of how to use this package, please consult the demo in `test/Demo.jl`:
 
