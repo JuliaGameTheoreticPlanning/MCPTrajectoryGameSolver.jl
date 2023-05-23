@@ -27,7 +27,7 @@ include("test/Demo.jl")
 Demo.demo()
 ```
 
-## Citiation
+## Citation
 
 [![](https://xinjie-liu.github.io/assets/img/liu2023ral_teaser.png)](https://arxiv.org/pdf/2211.13779.pdf)
 
