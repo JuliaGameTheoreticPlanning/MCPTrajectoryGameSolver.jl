@@ -8,7 +8,7 @@ This package provides a thin wrapper around the [ParametricMCPs.jl](https://gith
 [TrajectoryGamesBase.jl](https://github.com/lassepe/TrajectoryGamesBase.jl).
 
 By exploiting the implicit function theorem, game solutions can be differentiated with respect to the game parameters.
-This sensitivity information can be used to fit a game-theoretic model to observed behavior as we explore in our work [Learning to Play Trajectory Games Against Opponents with Unknown Objectives](https://arxiv.org/pdf/2211.13779.pdf).
+This sensitivity information can be used to fit a game-theoretic model to observed behavior as we explore in our work [Learning to Play Trajectory Games Against Opponents with Unknown Objectives](https://xinjie-liu.github.io/projects/game/).
 
 ## Quickstart
 
