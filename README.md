@@ -29,10 +29,11 @@ Demo.demo()
 
 ## Citation
 
+The original solver implementation and experiment code used in our research [Learning to Play Trajectory Games Against Opponents with Unknown Objectives](https://arxiv.org/pdf/2211.13779.pdf) can be found [here](https://github.com/xinjie-liu/DifferentiableAdaptiveGames.jl). This repository provides a more optimized implementation of the differentiable game solver. We kindly ask you to cite our paper if you use either of the implementations in your research. Thanks!
+
 [![](https://xinjie-liu.github.io/assets/img/liu2023ral_teaser.png)](https://arxiv.org/pdf/2211.13779.pdf)
 
-This package was originally developed as part of the paper [Learning to Play Trajectory Games Against Opponents with Unknown Objectives](https://arxiv.org/pdf/2211.13779.pdf).
-Please cite this paper if you use this package in your research.
+
 
 ```bibtex
 @article{liu2022learning,
@@ -42,3 +43,6 @@ Please cite this paper if you use this package in your research.
   year={2023}
 }
 ```
+<a href ="https://xinjie-liu.github.io/assets/pdf/Liu2023learningPoster(full).pdf"><img src="https://xinjie-liu.github.io/assets/img/liu2023ral_poster.png" width = "560" height = "396"></a>
+
+
