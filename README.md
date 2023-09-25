@@ -18,7 +18,7 @@ Installation is as simple as running:
 ]add MCPTrajectoryGameSolver
 ```
 
-This package uses PATH solver (via [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl)) under the hood. Larger-sized problems require to have a license key. By courtesy of Steven Dirkse, Michael Ferris, and Tudd Munson, temporary license keys are available free of charge. For more details about the license key, please consult [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl) (License section). Note that the error information reported by the solver due to a license issue can be irrelevant. Please try to get a license before running the scripts.
+This package uses PATH solver (via [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl)) under the hood. Larger-sized problems require to have a license key. By courtesy of Steven Dirkse, Michael Ferris, and Tudd Munson, temporary license keys are available free of charge. For more details about the license key, please consult [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl) (License section). Note that, when no license is loaded, PATH does not report an informative error and instead may just report a wrong result. Thus, make sure that the license is loaded correctly before using the solver.
 
 For a full example of how to use this package, please consult the demo in [`test/Demo.jl`](test/Demo.jl):
 
