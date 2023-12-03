@@ -38,12 +38,15 @@ The original solver implementation and experiment code used in our research [Lea
 
 
 ```bibtex
-@article{liu2022learning,
-  title={Learning to Play Trajectory Games Against Opponents with Unknown Objectives},
+@ARTICLE{liu2022learning,
   author={Liu, Xinjie and Peters, Lasse and Alonso-Mora, Javier},
-  journal={IEEE Robotics and Automation Letters (RA-L)},
-  year={2023}
-}
+  journal={IEEE Robotics and Automation Letters}, 
+  title={Learning to Play Trajectory Games Against Opponents With Unknown Objectives}, 
+  year={2023},
+  volume={8},
+  number={7},
+  pages={4139-4146},
+  doi={10.1109/LRA.2023.3280809}}
 ```
 <a href ="https://xinjie-liu.github.io/assets/pdf/Liu2023learningPoster(full).pdf"><img src="https://xinjie-liu.github.io/assets/img/liu2023ral_poster.png" width = "560" height = "396"></a>
 
