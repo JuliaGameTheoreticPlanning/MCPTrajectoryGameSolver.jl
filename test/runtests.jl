@@ -55,7 +55,7 @@ function isfeasible(env::TrajectoryGamesBase.PolygonEnvironment, trajectory; tol
     end |> all
 end
 
-function input_sanity(; solver, game, initial_state, context)
+function input_sanity(; solver, solver_wrong_context, game, initial_state, context)
     @testset "input sanity" begin
         @test_throws ArgumentError TrajectoryGamesBase.solve_trajectory_game!(
             solver,
@@ -151,11 +151,11 @@ function main()
             solver =
                 MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=length(context))
             solver_wrong_context =
-                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=6)
+                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=(length(context) + 1))
         end
 
         @testset "solve" begin
-            input_sanity(; solver, game, initial_state, context)
+            input_sanity(; solver, solver_wrong_context, game, initial_state, context)
             strategy =
                 TrajectoryGamesBase.solve_trajectory_game!(solver, game, initial_state; context)
             forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
