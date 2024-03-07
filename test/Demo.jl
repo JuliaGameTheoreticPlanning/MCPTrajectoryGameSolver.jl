@@ -54,7 +54,7 @@ function demo()
     initial_state = mortar([[-1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]])
     # both players want to reach a goal position at (0, 1))
     context = [0.0, 1.0, 0.0, 1.0]
-    joint_strategy = solve_trajectory_game!(solver, game, initial_state; context)
+    initial_joint_strategy = solve_trajectory_game!(solver, game, initial_state; context)
 
     # to demonstrate the differentiability, let us use gradient descent to find
     # goal positions that minimize each players' control effort
@@ -72,10 +72,6 @@ function demo()
         end
     end
 
-    # we can quickly visualize the solution
-    GLMakie.plot(game.env; color=:lightgray) |> display
-    GLMakie.plot!(joint_strategy)
-
     context_estimate = context
     number_of_gradient_steps = 100
     learning_rate = 1e-2
@@ -83,6 +79,18 @@ function demo()
         ∇context = only(Zygote.gradient(loss, context_estimate))
         context_estimate -= learning_rate * ∇context
     end
+
+    final_joint_strategy = solve_trajectory_game!(solver, game, initial_state; context=context_estimate)
+
+    # visualize the solution...
+    # ...for the initial context estimate
+    figure = GLMakie.Figure()
+    GLMakie.plot(figure[1, 1], game.env; axis=(; aspect=GLMakie.DataAspect(), title="Game solution for initial context estimate"))
+    GLMakie.plot!(figure[1, 1], initial_joint_strategy)
+    # ...and the optimized context estimate
+    GLMakie.plot(figure[1, 2], game.env; axis=(; aspect=GLMakie.DataAspect(), title="Game solution for optimized context estimate"))
+    GLMakie.plot!(figure[1, 2], final_joint_strategy)
+    display(figure)
 
     # trivially, we find that we can minimize each player's control input by setting
     # their goal positions to the initial positions
