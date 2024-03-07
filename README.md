@@ -22,9 +22,11 @@ This package uses PATH solver (via [PATHSolver.jl](https://github.com/chkwon/PAT
 
 For a full example of how to use this package, please consult the demo in [`test/Demo.jl`](test/Demo.jl):
 
+Start `julia --project` *from the repository root* and run the following commands:
 ```julia
-using TestEnv # install globally with `] add TestEnv` if you don't have this
+using Pkg, TestEnv # install globally with `] add TestEnv` if you don't have this
 TestEnv.activate()
+pkg"instantiate" # ensures that the test dependencies are installed, only needed once
 include("test/Demo.jl")
 Demo.demo()
 ```

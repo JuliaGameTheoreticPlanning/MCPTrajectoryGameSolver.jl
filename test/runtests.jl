@@ -55,31 +55,6 @@ function isfeasible(env::TrajectoryGamesBase.PolygonEnvironment, trajectory; tol
     end |> all
 end
 
-function main()
-    game = Demo.simple_game()
-    horizon = 2
-    context = [0.0, 1.0, 0.0, 1.0]
-    initial_state = mortar([[1.0, 0, 0, 0], [-1.0, 0, 0, 0]])
-
-    local solver, solver_wrong_context
-
-    @testset "Tests" begin
-        @testset "solver setup" begin
-            solver =
-                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=length(context))
-            solver_wrong_context =
-                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=6)
-        end
-
-        @testset "solve" begin
-            strategy =
-                TrajectoryGamesBase.solve_trajectory_game!(solver, game, initial_state; context)
-            forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
-            backward_pass_sanity(; solver, game, initial_state)
-        end
-    end
-end
-
 function input_sanity(; solver, game, initial_state, context)
     @testset "input sanity" begin
         @test_throws ArgumentError TrajectoryGamesBase.solve_trajectory_game!(
@@ -159,6 +134,36 @@ function backward_pass_sanity(;
             ∇_zygote = Zygote.gradient(loss, θ) |> only
             ∇_finitediff = FiniteDiff.finite_difference_gradient(loss, θ)
             @test isapprox(∇_zygote, ∇_finitediff; atol=1e-4)
+        end
+    end
+end
+
+function main()
+    game = Demo.simple_game()
+    horizon = 2
+    context = [0.0, 1.0, 0.0, 1.0]
+    initial_state = mortar([[1.0, 0, 0, 0], [-1.0, 0, 0, 0]])
+
+    local solver, solver_wrong_context
+
+    @testset "Tests" begin
+        @testset "solver setup" begin
+            solver =
+                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=length(context))
+            solver_wrong_context =
+                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=6)
+        end
+
+        @testset "solve" begin
+            input_sanity(; solver, game, initial_state, context)
+            strategy =
+                TrajectoryGamesBase.solve_trajectory_game!(solver, game, initial_state; context)
+            forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
+            backward_pass_sanity(; solver, game, initial_state)
+        end
+
+        @testset "integration test" begin
+            Demo.demo()
         end
     end
 end

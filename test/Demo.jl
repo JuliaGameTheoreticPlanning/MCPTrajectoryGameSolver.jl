@@ -5,7 +5,7 @@ using TrajectoryGamesBase:
 using TrajectoryGamesExamples: planar_double_integrator
 using BlockArrays: blocks, mortar
 using MCPTrajectoryGameSolver: Solver
-using Makie: Makie
+using GLMakie: GLMakie
 using Zygote: Zygote
 
 """
@@ -73,8 +73,8 @@ function demo()
     end
 
     # we can quickly visualize the solution
-    Makie.plot(game.env; color=:lightgray) |> display
-    Makie.plot!(joint_strategy)
+    GLMakie.plot(game.env; color=:lightgray) |> display
+    GLMakie.plot!(joint_strategy)
 
     context_estimate = context
     number_of_gradient_steps = 100
