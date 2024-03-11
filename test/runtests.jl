@@ -163,7 +163,8 @@ function main()
         end
 
         @testset "integration test" begin
-            Demo.demo()
+            Demo.demo_model_predictive_game_play()
+            Demo.demo_inverse_game()
         end
     end
 end

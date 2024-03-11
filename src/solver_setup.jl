@@ -1,4 +1,4 @@
-struct Solver{T1, T2}
+struct Solver{T1,T2}
     "The problem representation of the game via ParametricMCPs.ParametricMCP"
     mcp_problem_representation::T1
     "A named tuple collecting all the problem dimension infos"
@@ -133,6 +133,7 @@ function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_se
         inequality_constraints_symoblic
         coupling_constraints_symbolic
     ]
+
     z_symbolic = [
         private_variables_per_player_symbolic...
         μ_private_symbolic

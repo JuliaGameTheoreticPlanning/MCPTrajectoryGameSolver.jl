@@ -1,19 +1,28 @@
 module Demo
 
 using TrajectoryGamesBase:
-    TrajectoryGame, TrajectoryGameCost, ProductDynamics, GeneralSumCostStructure, PolygonEnvironment, solve_trajectory_game!
+    TrajectoryGamesBase,
+    TrajectoryGame,
+    TrajectoryGameCost,
+    ProductDynamics,
+    GeneralSumCostStructure,
+    PolygonEnvironment,
+    solve_trajectory_game!,
+    RecedingHorizonStrategy,
+    rollout
 using TrajectoryGamesExamples: planar_double_integrator
 using BlockArrays: blocks, mortar
 using MCPTrajectoryGameSolver: Solver
 using GLMakie: GLMakie
 using Zygote: Zygote
+using ParametricMCPs: ParametricMCPs
 
 """
 Set up a simple two-player collision-avoidance game:
    - each player wants to reach their own goal position encoded by the `context` vector
    - both players want to avoid collisions
 """
-function simple_game(; collision_avoidance_radius=1)
+function simple_game(; collision_avoidance_radius = 1)
     dynamics = let
         single_player_dynamics = planar_double_integrator()
         ProductDynamics([single_player_dynamics, single_player_dynamics])
@@ -47,10 +56,77 @@ function simple_game(; collision_avoidance_radius=1)
     TrajectoryGame(dynamics, cost, environment, coupling_constraint)
 end
 
-function demo()
+function demo_model_predictive_game_play()
+    simulation_horizon = 50
     game = simple_game()
-    horizon = 10
-    solver = Solver(game, horizon; context_dimension=4)
+    initial_state = mortar([[-1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]])
+    context = let
+        goal_p1 = [1.0, -0.1] # slightly offset goal to break symmetry
+        goal_p2 = -goal_p1
+        [goal_p1; goal_p2]
+    end
+    planning_horizon = 10
+    solver = Solver(game, planning_horizon; context_dimension = length(context))
+
+    receding_horizon_strategy = RecedingHorizonStrategy(;
+        solver,
+        game,
+        solve_kwargs = (; context),
+        turn_length = 2,
+        # TODO: we could also provide this as a more easy-to-use utility, maybe even via dispatch
+        # TODO: potentially allow the user to only warm-start the primals and or add noise
+        generate_initial_guess = function (last_strategy, state, time)
+            # only warm-start if the last strategy is converged / feasible
+            if !isnothing(last_strategy) &&
+               last_strategy.info.raw_solution.status == ParametricMCPs.PATHSolver.MCP_Solved
+                initial_guess = last_strategy.info.raw_solution.z
+            else
+                nothing
+            end
+        end,
+    )
+
+    # Set up the visualization in terms of `GLMakie.Observable` objectives for reactive programming
+    figure = GLMakie.Figure()
+    GLMakie.plot(
+        figure[1, 1],
+        game.env;
+        color = :lightgrey,
+        axis = (; aspect = GLMakie.DataAspect(), title = "Model predictive game play demo"),
+    )
+    joint_strategy =
+        GLMakie.Observable(solve_trajectory_game!(solver, game, initial_state; context))
+    GLMakie.plot!(figure[1, 1], joint_strategy)
+    for (player, color) in enumerate([:red, :blue])
+        GLMakie.scatter!(
+            figure[1, 1],
+            GLMakie.@lift(GLMakie.Point2f($joint_strategy.substrategies[player].xs[begin]));
+            color,
+        )
+    end
+    display(figure)
+
+    # visualization callback to update the observables on the fly
+    function get_info(strategy, state, time)
+        joint_strategy[] = strategy.receding_horizon_strategy
+        sleep(0.1) # so that there's some time to see the visualization
+        nothing # what ever we return here will be stored in `trajectory.infos` in case you need it for later inspection
+    end
+
+    # simulate the receding horizon strategy
+    trajectory = rollout(
+        game.dynamics,
+        receding_horizon_strategy,
+        initial_state,
+        simulation_horizon;
+        get_info,
+    )
+end
+
+function demo_inverse_game()
+    game = simple_game()
+    planning_horizon = 10
+    solver = Solver(game, planning_horizon; context_dimension = 4)
     initial_state = mortar([[-1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]])
     # both players want to reach a goal position at (0, 1))
     context = [0.0, 1.0, 0.0, 1.0]
@@ -80,15 +156,30 @@ function demo()
         context_estimate -= learning_rate * ∇context
     end
 
-    final_joint_strategy = solve_trajectory_game!(solver, game, initial_state; context=context_estimate)
+    final_joint_strategy =
+        solve_trajectory_game!(solver, game, initial_state; context = context_estimate)
 
     # visualize the solution...
     # ...for the initial context estimate
     figure = GLMakie.Figure()
-    GLMakie.plot(figure[1, 1], game.env; axis=(; aspect=GLMakie.DataAspect(), title="Game solution for initial context estimate"))
+    GLMakie.plot(
+        figure[1, 1],
+        game.env;
+        axis = (;
+            aspect = GLMakie.DataAspect(),
+            title = "Game solution for initial context estimate",
+        ),
+    )
     GLMakie.plot!(figure[1, 1], initial_joint_strategy)
     # ...and the optimized context estimate
-    GLMakie.plot(figure[1, 2], game.env; axis=(; aspect=GLMakie.DataAspect(), title="Game solution for optimized context estimate"))
+    GLMakie.plot(
+        figure[1, 2],
+        game.env;
+        axis = (;
+            aspect = GLMakie.DataAspect(),
+            title = "Game solution for optimized context estimate",
+        ),
+    )
     GLMakie.plot!(figure[1, 2], final_joint_strategy)
     display(figure)
 

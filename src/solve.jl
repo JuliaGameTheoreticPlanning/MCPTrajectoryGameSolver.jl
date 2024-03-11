@@ -35,7 +35,7 @@ function strategy_from_raw_solution(; raw_solution, game, solver)
     number_of_players = num_players(game)
     z_iter = Iterators.Stateful(raw_solution.z)
 
-    map(1:number_of_players) do player_index
+    substrategies = map(1:number_of_players) do player_index
         private_state_dimension = solver.dimensions.state_blocks[player_index]
         private_control_dimension = solver.dimensions.control_blocks[player_index]
         number_of_primals =
@@ -44,7 +44,10 @@ function strategy_from_raw_solution(; raw_solution, game, solver)
         trajectory =
             unflatten_trajectory(z_private, private_state_dimension, private_control_dimension)
         OpenLoopStrategy(trajectory.xs, trajectory.us)
-    end |> TrajectoryGamesBase.JointStrategy
+    end
+
+    info = (; raw_solution)
+    TrajectoryGamesBase.JointStrategy(substrategies, info)
 end
 
 function generate_initial_guess(solver, game, initial_state)

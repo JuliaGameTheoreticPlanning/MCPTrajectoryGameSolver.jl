@@ -24,11 +24,11 @@ For a full example of how to use this package, please consult the demo in [`test
 
 Start `julia --project` *from the repository root* and run the following commands:
 ```julia
-using Pkg, TestEnv # install globally with `] add TestEnv` if you don't have this
+using TestEnv, Revise # install globally with `] add TestEnv, Revise` if you don't have this
 TestEnv.activate()
-pkg"instantiate" # ensures that the test dependencies are installed, only needed once
-include("test/Demo.jl")
-Demo.demo()
+Revise.includet("test/Demo.jl")
+Demo.demo_model_predictive_game_play() # example of receding-horizon interaction
+Demo.demo_inverse_game() # example of fitting game parameters via differentiation of the game solver
 ```
 
 ## Citation
