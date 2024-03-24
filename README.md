@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
 
 This package provides a thin wrapper around the [ParametricMCPs.jl](https://github.com/lassepe/ParametricMCPs.jl) package to solve trajectory games from
-[TrajectoryGamesBase.jl](https://github.com/lassepe/TrajectoryGamesBase.jl).
+[TrajectoryGamesBase.jl](https://github.com/JuliaGameTheoreticPlanning/TrajectoryGamesBase.jl).
 
 By exploiting the implicit function theorem, game solutions can be differentiated with respect to the game parameters.
 This sensitivity information can be used to fit a game-theoretic model to observed behavior as we explore in our work [Learning to Play Trajectory Games Against Opponents with Unknown Objectives](https://xinjie-liu.github.io/projects/game/).
