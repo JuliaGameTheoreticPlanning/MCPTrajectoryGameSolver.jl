@@ -5,7 +5,13 @@ struct Solver{T1,T2}
     dimensions::T2
 end
 
-function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_sensitivities = true)
+function Solver(
+    game::TrajectoryGame,
+    horizon;
+    context_dimension = 0,
+    compute_sensitivities = true,
+    parametric_mcp_options = (;),
+)
     dimensions = let
         state_blocks =
             [state_dim(game.dynamics, player_index) for player_index in 1:num_players(game)]
@@ -161,6 +167,7 @@ function Solver(game::TrajectoryGame, horizon; context_dimension = 0, compute_se
         lower_bounds,
         upper_bounds;
         compute_sensitivities,
+        parametric_mcp_options...,
     )
 
     Solver(mcp_problem_representation, dimensions)
