@@ -9,6 +9,7 @@ using StatsBase: mean
 using Zygote: Zygote
 using FiniteDiff: FiniteDiff
 using Random: Random
+using Symbolics: Symbolics
 
 include("Demo.jl")
 
@@ -55,25 +56,27 @@ function isfeasible(env::TrajectoryGamesBase.PolygonEnvironment, trajectory; tol
     end |> all
 end
 
-function input_sanity(; solver, solver_wrong_context, game, initial_state, context)
+function input_sanity(; solver, game, initial_state, context)
     @testset "input sanity" begin
         @test_throws ArgumentError TrajectoryGamesBase.solve_trajectory_game!(
             solver,
             game,
             initial_state,
         )
+        context_with_wrong_size = [context; 0.0]
         @test_throws ArgumentError TrajectoryGamesBase.solve_trajectory_game!(
-            solver_wrong_context,
+            solver,
             game,
             initial_state;
-            context
+            context=context_with_wrong_size,
         )
+        multipliers_despite_no_shared_constraints = [1]
         @test_throws ArgumentError TrajectoryGamesBase.solve_trajectory_game!(
             solver,
             game,
             initial_state;
             context,
-            shared_constraint_premultipliers=[1]
+            shared_constraint_premultipliers=multipliers_despite_no_shared_constraints,
         )
     end
 end
@@ -110,7 +113,7 @@ function backward_pass_sanity(;
     game,
     initial_state,
     rng=Random.MersenneTwister(1),
-    θs=[randn(rng, 4) for _ in 1:10]
+    θs=[randn(rng, 4) for _ in 1:10],
 )
     @testset "backward pass sanity" begin
         function loss(θ)
@@ -119,7 +122,7 @@ function backward_pass_sanity(;
                     solver,
                     game,
                     initial_state;
-                    context=θ
+                    context=θ,
                 )
 
                 sum(strategy.substrategies) do substrategy
@@ -144,22 +147,29 @@ function main()
     context = [0.0, 1.0, 0.0, 1.0]
     initial_state = mortar([[1.0, 0, 0, 0], [-1.0, 0, 0, 0]])
 
-    local solver, solver_wrong_context
+    local solver, solver_parallel
 
     @testset "Tests" begin
         @testset "solver setup" begin
             solver =
                 MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=length(context))
-            solver_wrong_context =
-                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=(length(context) + 1))
+            # exercise some inner solver options...
+            solver_parallel = MCPTrajectoryGameSolver.Solver(
+                game,
+                horizon;
+                context_dimension=length(context),
+                parametric_mcp_options=(; parallel=Symbolics.ShardedForm()),
+            )
         end
 
         @testset "solve" begin
-            input_sanity(; solver, solver_wrong_context, game, initial_state, context)
-            strategy =
-                TrajectoryGamesBase.solve_trajectory_game!(solver, game, initial_state; context)
-            forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
-            backward_pass_sanity(; solver, game, initial_state)
+            for solver in [solver, solver_parallel]
+                input_sanity(; solver, game, initial_state, context)
+                strategy =
+                    TrajectoryGamesBase.solve_trajectory_game!(solver, game, initial_state; context)
+                forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
+                backward_pass_sanity(; solver, game, initial_state)
+            end
         end
 
         @testset "integration test" begin
