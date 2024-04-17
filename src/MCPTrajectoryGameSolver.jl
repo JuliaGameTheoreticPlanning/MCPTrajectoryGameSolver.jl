@@ -18,8 +18,8 @@ using TrajectoryGamesBase:
     unflatten_trajectory,
     unstack_trajectory
 
-using Symbolics: Symbolics
-using ParametricMCPs: ParametricMCPs
+using ParametricMCPs: ParametricMCPs, SymbolicUtils
+
 using BlockArrays: BlockArrays, mortar, blocks, eachblock
 using ChainRulesCore: ChainRulesCore
 
