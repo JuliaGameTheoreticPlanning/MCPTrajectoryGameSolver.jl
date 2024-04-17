@@ -11,6 +11,7 @@ function Solver(
     context_dimension = 0,
     compute_sensitivities = true,
     parametric_mcp_options = (;),
+    symbolic_backend = SymbolicUtils.SymbolicsBackend(),
 )
     dimensions = let
         state_blocks =
@@ -184,4 +185,3 @@ end
 function compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
     [initial_state; context; shared_constraint_premultipliers]
 end
-

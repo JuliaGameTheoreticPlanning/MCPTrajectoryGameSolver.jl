@@ -13,17 +13,17 @@ using Symbolics: Symbolics
 
 include("Demo.jl")
 
-function isfeasible(game::TrajectoryGamesBase.TrajectoryGame, trajectory; tol=1e-4)
+function isfeasible(game::TrajectoryGamesBase.TrajectoryGame, trajectory; tol = 1e-4)
     isfeasible(game.dynamics, trajectory; tol) &&
         isfeasible(game.env, trajectory; tol) &&
         all(game.coupling_constraints(trajectory.xs, trajectory.us) .>= 0 - tol)
 end
 
-function isfeasible(dynamics::TrajectoryGamesBase.AbstractDynamics, trajectory; tol=1e-4)
+function isfeasible(dynamics::TrajectoryGamesBase.AbstractDynamics, trajectory; tol = 1e-4)
     dynamics_steps_consistent = all(
         map(2:length(trajectory.xs)) do t
             residual =
-                trajectory.xs[t] - dynamics(trajectory.xs[t-1], trajectory.us[t-1], t - 1)
+                trajectory.xs[t] - dynamics(trajectory.xs[t - 1], trajectory.us[t - 1], t - 1)
             sum(abs, residual) < tol
         end,
     )
@@ -45,7 +45,7 @@ function isfeasible(dynamics::TrajectoryGamesBase.AbstractDynamics, trajectory; 
     dynamics_steps_consistent && state_bounds_feasible && control_bounds_feasible
 end
 
-function isfeasible(env::TrajectoryGamesBase.PolygonEnvironment, trajectory; tol=1e-4)
+function isfeasible(env::TrajectoryGamesBase.PolygonEnvironment, trajectory; tol = 1e-4)
     trajectory_per_player = MCPTrajectoryGameSolver.unstack_trajectory(trajectory)
 
     map(enumerate(trajectory_per_player)) do (ii, trajectory)
@@ -68,7 +68,7 @@ function input_sanity(; solver, game, initial_state, context)
             solver,
             game,
             initial_state;
-            context=context_with_wrong_size,
+            context = context_with_wrong_size,
         )
         multipliers_despite_no_shared_constraints = [1]
         @test_throws ArgumentError TrajectoryGamesBase.solve_trajectory_game!(
@@ -76,12 +76,12 @@ function input_sanity(; solver, game, initial_state, context)
             game,
             initial_state;
             context,
-            shared_constraint_premultipliers=multipliers_despite_no_shared_constraints,
+            shared_constraint_premultipliers = multipliers_despite_no_shared_constraints,
         )
     end
 end
 
-function forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy, tol=1e-4)
+function forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy, tol = 1e-4)
     @testset "forwardpass sanity" begin
         nash_trajectory =
             TrajectoryGamesBase.rollout(game.dynamics, strategy, initial_state, horizon)
@@ -112,8 +112,8 @@ function backward_pass_sanity(;
     solver,
     game,
     initial_state,
-    rng=Random.MersenneTwister(1),
-    θs=[randn(rng, 4) for _ in 1:10],
+    rng = Random.MersenneTwister(1),
+    θs = [randn(rng, 4) for _ in 1:10],
 )
     @testset "backward pass sanity" begin
         function loss(θ)
@@ -122,7 +122,7 @@ function backward_pass_sanity(;
                     solver,
                     game,
                     initial_state;
-                    context=θ,
+                    context = θ,
                 )
 
                 sum(strategy.substrategies) do substrategy
@@ -136,7 +136,7 @@ function backward_pass_sanity(;
         for θ in θs
             ∇_zygote = Zygote.gradient(loss, θ) |> only
             ∇_finitediff = FiniteDiff.finite_difference_gradient(loss, θ)
-            @test isapprox(∇_zygote, ∇_finitediff; atol=1e-4)
+            @test isapprox(∇_zygote, ∇_finitediff; atol = 1e-4)
         end
     end
 end
@@ -147,34 +147,49 @@ function main()
     context = [0.0, 1.0, 0.0, 1.0]
     initial_state = mortar([[1.0, 0, 0, 0], [-1.0, 0, 0, 0]])
 
-    local solver, solver_parallel
-
     @testset "Tests" begin
-        @testset "solver setup" begin
-            solver =
-                MCPTrajectoryGameSolver.Solver(game, horizon; context_dimension=length(context))
-            # exercise some inner solver options...
-            solver_parallel = MCPTrajectoryGameSolver.Solver(
-                game,
-                horizon;
-                context_dimension=length(context),
-                parametric_mcp_options=(; parallel=Symbolics.ShardedForm()),
-            )
-        end
+        for options in [
+            (; symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.SymbolicsBackend(),),
+            (;
+                symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.SymbolicsBackend(),
+                parametric_mcp_options = (;
+                    backend_options = (; parallel = Symbolics.ShardedForm())
+                ),
+            ),
+            (;
+                symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.FastDifferentiationBackend(),
+            ),
+        ]
+            local solver
 
-        @testset "solve" begin
-            for solver in [solver, solver_parallel]
-                input_sanity(; solver, game, initial_state, context)
-                strategy =
-                    TrajectoryGamesBase.solve_trajectory_game!(solver, game, initial_state; context)
-                forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
-                backward_pass_sanity(; solver, game, initial_state)
+            @testset "$options" begin
+                @testset "solver setup" begin
+                    solver = nothing
+                    solver = MCPTrajectoryGameSolver.Solver(
+                        game,
+                        horizon;
+                        context_dimension = length(context),
+                        options...,
+                    )
+                end
+
+                @testset "solve" begin
+                    input_sanity(; solver, game, initial_state, context)
+                    strategy = TrajectoryGamesBase.solve_trajectory_game!(
+                        solver,
+                        game,
+                        initial_state;
+                        context,
+                    )
+                    forward_pass_sanity(; solver, game, initial_state, context, horizon, strategy)
+                    backward_pass_sanity(; solver, game, initial_state)
+                end
+
+                @testset "integration test" begin
+                    Demo.demo_model_predictive_game_play()
+                    Demo.demo_inverse_game()
+                end
             end
-        end
-
-        @testset "integration test" begin
-            Demo.demo_model_predictive_game_play()
-            Demo.demo_inverse_game()
         end
     end
 end
