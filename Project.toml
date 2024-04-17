@@ -1,7 +1,7 @@
 name = "MCPTrajectoryGameSolver"
 uuid = "d93e73c3-c101-4c3f-b101-f812c3e47675"
 authors = ["lassepe <lasse.peters@mailbox.org>"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
