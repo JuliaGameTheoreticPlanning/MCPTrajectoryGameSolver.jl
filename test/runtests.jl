@@ -10,6 +10,7 @@ using Zygote: Zygote
 using FiniteDiff: FiniteDiff
 using Random: Random
 using Symbolics: Symbolics
+using ADTypes: ADTypes
 
 include("Demo.jl")
 
@@ -149,16 +150,14 @@ function main()
 
     @testset "Tests" begin
         for options in [
-            (; symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.SymbolicsBackend(),),
+            (; symbolic_backend = ADTypes.AutoSymbolics(),),
             (;
-                symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.SymbolicsBackend(),
+                symbolic_backend = ADTypes.AutoSymbolics(),
                 parametric_mcp_options = (;
                     backend_options = (; parallel = Symbolics.ShardedForm())
                 ),
             ),
-            (;
-                symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.FastDifferentiationBackend(),
-            ),
+            (; symbolic_backend = ADType.AutoFastDifferentiation(),),
         ]
             local solver
 

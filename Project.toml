@@ -4,12 +4,14 @@ authors = ["lassepe <lasse.peters@mailbox.org>"]
 version = "0.1.1"
 
 [deps]
+ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 ParametricMCPs = "9b992ff8-05bb-4ea1-b9d2-5ef72d82f7ad"
 TrajectoryGamesBase = "ac1ac542-73eb-4349-ae1b-660ab3609574"
 
 [compat]
+ADTypes = "1.0.0"
 BlockArrays = "0.16"
 ChainRulesCore = "1"
 ParametricMCPs = "0.1.14"

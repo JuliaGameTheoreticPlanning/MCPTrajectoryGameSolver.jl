@@ -22,6 +22,7 @@ using ParametricMCPs: ParametricMCPs, SymbolicUtils
 
 using BlockArrays: BlockArrays, mortar, blocks, eachblock
 using ChainRulesCore: ChainRulesCore
+using ADTypes: ADTypes
 
 include("solver_setup.jl")
 include("solve.jl")

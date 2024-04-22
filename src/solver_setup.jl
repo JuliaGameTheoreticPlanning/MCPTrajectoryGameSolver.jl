@@ -11,7 +11,7 @@ function Solver(
     context_dimension = 0,
     compute_sensitivities = true,
     parametric_mcp_options = (;),
-    symbolic_backend = SymbolicUtils.SymbolicsBackend(),
+    symbolic_backend = ADTypes.AutoSymbolics(),
 )
     dimensions = let
         state_blocks =
