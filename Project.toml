@@ -10,7 +10,7 @@ ParametricMCPs = "9b992ff8-05bb-4ea1-b9d2-5ef72d82f7ad"
 TrajectoryGamesBase = "ac1ac542-73eb-4349-ae1b-660ab3609574"
 
 [compat]
-BlockArrays = "0.16"
+BlockArrays = "0.16, 1"
 ChainRulesCore = "1"
 ParametricMCPs = "0.1.14"
 TrajectoryGamesBase = "0.3.6"
