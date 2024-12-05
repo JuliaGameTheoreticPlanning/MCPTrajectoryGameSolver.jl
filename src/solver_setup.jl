@@ -164,7 +164,7 @@ function Solver(
     ]
     upper_bounds = fill(Inf, length(lower_bounds))
 
-    mcp_problem_representation = ParametricMCPs.ParametricMCP(
+    mcp_problem_representation = IPMCPs.PrimalDualMCP(
         f_symbolic,
         z_symbolic,
         θ_symbolic,

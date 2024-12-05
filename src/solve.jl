@@ -17,11 +17,12 @@ function TrajectoryGamesBase.solve_trajectory_game!(
 
     θ = compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
 
-    raw_solution = ParametricMCPs.solve(
+    raw_solution = IPMCPs.solve(
+        IPMCPs.InteriorPoint(),
         solver.mcp_problem_representation,
         θ;
-        initial_guess = isnothing(initial_guess) ?
-                        generate_initial_guess(solver, game, initial_state) : initial_guess,
+        # initial_guess = isnothing(initial_guess) ?
+        #                 generate_initial_guess(solver, game, initial_state) : initial_guess,
         parametric_mcp_solve_options...,
     )
 
@@ -33,7 +34,8 @@ Reshapes the raw solution into a `JointStrategy` over `OpenLoopStrategy`s.
 """
 function strategy_from_raw_solution(; raw_solution, game, solver)
     number_of_players = num_players(game)
-    z_iter = Iterators.Stateful(raw_solution.z)
+    # z_iter = Iterators.Stateful(raw_solution.z)
+    z_iter = Iterators.Stateful(raw_solution.x)
 
     substrategies = map(1:number_of_players) do player_index
         private_state_dimension = solver.dimensions.state_blocks[player_index]
@@ -50,24 +52,24 @@ function strategy_from_raw_solution(; raw_solution, game, solver)
     TrajectoryGamesBase.JointStrategy(substrategies, info)
 end
 
-function generate_initial_guess(solver, game, initial_state)
-    ChainRulesCore.ignore_derivatives() do
-        z_initial = zeros(ParametricMCPs.get_problem_size(solver.mcp_problem_representation))
-
-        rollout_strategy =
-            map(solver.dimensions.control_blocks) do control_dimension_player_i
-                (x, t) -> zeros(control_dimension_player_i)
-            end |> TrajectoryGamesBase.JointStrategy
-
-        zero_input_trajectory = TrajectoryGamesBase.rollout(
-            game.dynamics,
-            rollout_strategy,
-            initial_state,
-            solver.dimensions.horizon,
-        )
-
-        copyto!(z_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
-
-        z_initial
-    end
-end
+# function generate_initial_guess(solver, game, initial_state)
+#     ChainRulesCore.ignore_derivatives() do
+#         z_initial = zeros(ParametricMCPs.get_problem_size(solver.mcp_problem_representation))
+#
+#         rollout_strategy =
+#             map(solver.dimensions.control_blocks) do control_dimension_player_i
+#                 (x, t) -> zeros(control_dimension_player_i)
+#             end |> TrajectoryGamesBase.JointStrategy
+#
+#         zero_input_trajectory = TrajectoryGamesBase.rollout(
+#             game.dynamics,
+#             rollout_strategy,
+#             initial_state,
+#             solver.dimensions.horizon,
+#         )
+#
+#         copyto!(z_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
+#
+#         z_initial
+#     end
+# end
