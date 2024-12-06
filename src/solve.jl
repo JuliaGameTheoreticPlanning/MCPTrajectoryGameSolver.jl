@@ -17,12 +17,17 @@ function TrajectoryGamesBase.solve_trajectory_game!(
 
     θ = compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
 
+    if isnothing(initial_guess)
+        initial_guess = generate_initial_guess(solver, game, initial_state)
+    else
+        initial_guess = (; x₀ = initial_guess.x, y₀ = initial_guess.y)
+    end
+
     raw_solution = IPMCPs.solve(
         IPMCPs.InteriorPoint(),
         solver.mcp_problem_representation,
         θ;
-        # initial_guess = isnothing(initial_guess) ?
-        #                 generate_initial_guess(solver, game, initial_state) : initial_guess,
+        initial_guess...,
         parametric_mcp_solve_options...,
     )
 
@@ -52,24 +57,25 @@ function strategy_from_raw_solution(; raw_solution, game, solver)
     TrajectoryGamesBase.JointStrategy(substrategies, info)
 end
 
-# function generate_initial_guess(solver, game, initial_state)
-#     ChainRulesCore.ignore_derivatives() do
-#         z_initial = zeros(ParametricMCPs.get_problem_size(solver.mcp_problem_representation))
-#
-#         rollout_strategy =
-#             map(solver.dimensions.control_blocks) do control_dimension_player_i
-#                 (x, t) -> zeros(control_dimension_player_i)
-#             end |> TrajectoryGamesBase.JointStrategy
-#
-#         zero_input_trajectory = TrajectoryGamesBase.rollout(
-#             game.dynamics,
-#             rollout_strategy,
-#             initial_state,
-#             solver.dimensions.horizon,
-#         )
-#
-#         copyto!(z_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
-#
-#         z_initial
-#     end
-# end
+function generate_initial_guess(solver, game, initial_state)
+    ChainRulesCore.ignore_derivatives() do
+        x_initial = zeros(solver.mcp_problem_representation.unconstrained_dimension)
+        y_initial = zeros(solver.mcp_problem_representation.constrained_dimension)
+
+        rollout_strategy =
+            map(solver.dimensions.control_blocks) do control_dimension_player_i
+                (x, t) -> zeros(control_dimension_player_i)
+            end |> TrajectoryGamesBase.JointStrategy
+
+        zero_input_trajectory = TrajectoryGamesBase.rollout(
+            game.dynamics,
+            rollout_strategy,
+            initial_state,
+            solver.dimensions.horizon,
+        )
+
+        copyto!(x_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
+
+        (; x₀ = x_initial, y₀ = y_initial)
+    end
+end
