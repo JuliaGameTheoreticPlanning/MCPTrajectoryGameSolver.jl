@@ -5,7 +5,7 @@ function TrajectoryGamesBase.solve_trajectory_game!(
     shared_constraint_premultipliers = ones(num_players(game)),
     context = Float64[],
     initial_guess = nothing,
-    parametric_mcp_solve_options = (; tol = 1e-7),
+    parametric_mcp_solve_options = (; tol = 1e-4),
 )
     length(shared_constraint_premultipliers) == num_players(game) ||
         throw(ArgumentError("Must provide one constraint multiplier per player"))
