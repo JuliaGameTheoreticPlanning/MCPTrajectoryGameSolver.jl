@@ -12,6 +12,6 @@ TrajectoryGamesBase = "ac1ac542-73eb-4349-ae1b-660ab3609574"
 [compat]
 BlockArrays = "0.16, 1"
 ChainRulesCore = "1"
-MixedComplementarityProblems = "0.1.1"
+MixedComplementarityProblems = "0.1.9"
 TrajectoryGamesBase = "0.3.6"
 julia = "1.7"
