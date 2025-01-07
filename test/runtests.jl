@@ -149,15 +149,15 @@ function main()
 
     @testset "Tests" begin
         for options in [
-            (; symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.SymbolicsBackend(),),
+            (; symbolic_backend = MCPTrajectoryGameSolver.SymbolicTracingUtils.SymbolicsBackend(),),
             (;
-                symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.SymbolicsBackend(),
+                symbolic_backend = MCPTrajectoryGameSolver.SymbolicTracingUtils.SymbolicsBackend(),
                 parametric_mcp_options = (;
                     backend_options = (; parallel = Symbolics.ShardedForm())
                 ),
             ),
             (;
-                symbolic_backend = MCPTrajectoryGameSolver.SymbolicUtils.FastDifferentiationBackend(),
+                symbolic_backend = MCPTrajectoryGameSolver.SymbolicTracingUtils.FastDifferentiationBackend(),
             ),
         ]
             local solver

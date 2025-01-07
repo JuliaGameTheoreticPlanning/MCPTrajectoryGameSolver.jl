@@ -18,7 +18,7 @@ using TrajectoryGamesBase:
     unflatten_trajectory,
     unstack_trajectory
 
-using MixedComplementarityProblems: MixedComplementarityProblems as IPMCPs, SymbolicUtils
+using MixedComplementarityProblems: MixedComplementarityProblems as IPMCPs, SymbolicTracingUtils
 
 using BlockArrays: BlockArrays, mortar, blocks, eachblock
 using ChainRulesCore: ChainRulesCore
