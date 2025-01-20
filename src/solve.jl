@@ -20,7 +20,7 @@ function TrajectoryGamesBase.solve_trajectory_game!(
     if isnothing(initial_guess)
         initial_guess = generate_initial_guess(solver, game, initial_state)
     else
-        initial_guess = (; x₀ = initial_guess.x, y₀ = initial_guess.y)
+        initial_guess = (; x₀ = initial_guess.x, y₀ = initial_guess.y, s₀ = initial_guess.s)
     end
 
     raw_solution = IPMCPs.solve(
