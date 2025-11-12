@@ -5,7 +5,7 @@ function TrajectoryGamesBase.solve_trajectory_game!(
     shared_constraint_premultipliers = ones(num_players(game)),
     context = Float64[],
     initial_guess = nothing,
-    parametric_mcp_solve_options = (;),
+    parametric_mcp_solve_options = (; tol = 1e-4),
 )
     length(shared_constraint_premultipliers) == num_players(game) ||
         throw(ArgumentError("Must provide one constraint multiplier per player"))
@@ -17,11 +17,17 @@ function TrajectoryGamesBase.solve_trajectory_game!(
 
     θ = compose_parameter_vector(; initial_state, context, shared_constraint_premultipliers)
 
-    raw_solution = ParametricMCPs.solve(
+    if isnothing(initial_guess)
+        initial_guess = generate_initial_guess(solver, game, initial_state)
+    else
+        initial_guess = (; x₀ = initial_guess.x, y₀ = initial_guess.y, s₀ = initial_guess.s)
+    end
+
+    raw_solution = IPMCPs.solve(
+        IPMCPs.InteriorPoint(),
         solver.mcp_problem_representation,
         θ;
-        initial_guess = isnothing(initial_guess) ?
-                        generate_initial_guess(solver, game, initial_state) : initial_guess,
+        initial_guess...,
         parametric_mcp_solve_options...,
     )
 
@@ -33,7 +39,8 @@ Reshapes the raw solution into a `JointStrategy` over `OpenLoopStrategy`s.
 """
 function strategy_from_raw_solution(; raw_solution, game, solver)
     number_of_players = num_players(game)
-    z_iter = Iterators.Stateful(raw_solution.z)
+    # z_iter = Iterators.Stateful(raw_solution.z)
+    z_iter = Iterators.Stateful(raw_solution.x)
 
     substrategies = map(1:number_of_players) do player_index
         private_state_dimension = solver.dimensions.state_blocks[player_index]
@@ -52,7 +59,8 @@ end
 
 function generate_initial_guess(solver, game, initial_state)
     ChainRulesCore.ignore_derivatives() do
-        z_initial = zeros(ParametricMCPs.get_problem_size(solver.mcp_problem_representation))
+        x_initial = zeros(solver.mcp_problem_representation.unconstrained_dimension)
+        y_initial = zeros(solver.mcp_problem_representation.constrained_dimension)
 
         rollout_strategy =
             map(solver.dimensions.control_blocks) do control_dimension_player_i
@@ -66,8 +74,8 @@ function generate_initial_guess(solver, game, initial_state)
             solver.dimensions.horizon,
         )
 
-        copyto!(z_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
+        copyto!(x_initial, reduce(vcat, flatten_trajetory_per_player(zero_input_trajectory)))
 
-        z_initial
+        (; x₀ = x_initial, y₀ = y_initial)
     end
 end

@@ -15,7 +15,7 @@ using BlockArrays: blocks, mortar
 using MCPTrajectoryGameSolver: Solver
 using GLMakie: GLMakie
 using Zygote: Zygote
-using ParametricMCPs: ParametricMCPs
+# using ParametricMCPs: ParametricMCPs
 
 """
 Set up a simple two-player collision-avoidance game:
@@ -78,8 +78,10 @@ function demo_model_predictive_game_play()
         generate_initial_guess = function (last_strategy, state, time)
             # only warm-start if the last strategy is converged / feasible
             if !isnothing(last_strategy) &&
-               last_strategy.info.raw_solution.status == ParametricMCPs.PATHSolver.MCP_Solved
-                initial_guess = last_strategy.info.raw_solution.z
+               # last_strategy.info.raw_solution.status == ParametricMCPs.PATHSolver.MCP_Solved
+               last_strategy.info.raw_solution.status === :solved
+                initial_guess =
+                    (; last_strategy.info.raw_solution.x, last_strategy.info.raw_solution.y)
             else
                 nothing
             end

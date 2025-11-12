@@ -11,7 +11,7 @@ function Solver(
     context_dimension = 0,
     compute_sensitivities = true,
     parametric_mcp_options = (;),
-    symbolic_backend = SymbolicUtils.SymbolicsBackend(),
+    symbolic_backend = SymbolicTracingUtils.SymbolicsBackend(),
 )
     dimensions = let
         state_blocks =
@@ -24,18 +24,19 @@ function Solver(
     end
 
     initial_state_symbolic =
-        SymbolicUtils.make_variables(symbolic_backend, :x0, dimensions.state) |>
+        SymbolicTracingUtils.make_variables(symbolic_backend, :x0, dimensions.state) |>
         to_blockvector(dimensions.state_blocks)
 
     xs_symbolic =
-        SymbolicUtils.make_variables(symbolic_backend, :X, dimensions.state * horizon) |>
+        SymbolicTracingUtils.make_variables(symbolic_backend, :X, dimensions.state * horizon) |>
         to_vector_of_blockvectors(dimensions.state_blocks)
 
     us_symbolic =
-        SymbolicUtils.make_variables(symbolic_backend, :U, dimensions.control * horizon) |>
+        SymbolicTracingUtils.make_variables(symbolic_backend, :U, dimensions.control * horizon) |>
         to_vector_of_blockvectors(dimensions.control_blocks)
 
-    context_symbolic = SymbolicUtils.make_variables(symbolic_backend, :context, context_dimension)
+    context_symbolic =
+        SymbolicTracingUtils.make_variables(symbolic_backend, :context, context_dimension)
 
     cost_per_player_symbolic = game.cost(xs_symbolic, us_symbolic, context_symbolic)
 
@@ -83,7 +84,7 @@ function Solver(
 
     if isnothing(game.coupling_constraints)
         coupling_constraints_symbolic =
-            SymbolicUtils.make_variables(symbolic_backend, :coupling_constraints, 0)
+            SymbolicTracingUtils.make_variables(symbolic_backend, :coupling_constraints, 0)
     else
         # Note: we don't constraint the first state because we have no control authority over that anyway
         coupling_constraints_symbolic =
@@ -92,21 +93,24 @@ function Solver(
 
     # set up the duals for all constraints
     # private constraints
-    μ_private_symbolic =
-        SymbolicUtils.make_variables(symbolic_backend, :μ, length(equality_constraints_symbolic))
+    μ_private_symbolic = SymbolicTracingUtils.make_variables(
+        symbolic_backend,
+        :μ,
+        length(equality_constraints_symbolic),
+    )
 
     #λ_private_symbolic =
     #    Symbolics.@variables(λ_private[1:length(inequality_constraints_symoblic)]) |>
     #    only |>
     #    scalarize
-    λ_private_symbolic = SymbolicUtils.make_variables(
+    λ_private_symbolic = SymbolicTracingUtils.make_variables(
         symbolic_backend,
         :λ_private,
         length(inequality_constraints_symoblic),
     )
 
     # shared constraints
-    λ_shared_symbolic = SymbolicUtils.make_variables(
+    λ_shared_symbolic = SymbolicTracingUtils.make_variables(
         symbolic_backend,
         :λ_shared,
         length(coupling_constraints_symbolic),
@@ -116,7 +120,7 @@ function Solver(
     # TODO: technically, we could have this scaling for *every* element of the constraint and
     # actually every constraint but for now let's keep it simple
     shared_constraint_premultipliers_symbolic =
-        SymbolicUtils.make_variables(symbolic_backend, :γ_scaling, num_players(game))
+        SymbolicTracingUtils.make_variables(symbolic_backend, :γ_scaling, num_players(game))
 
     private_variables_per_player_symbolic =
         flatten_trajetory_per_player((; xs = xs_symbolic, us = us_symbolic))
@@ -133,7 +137,7 @@ function Solver(
             λ_private_symbolic' * inequality_constraints_symoblic -
             λ_shared_symbolic' * coupling_constraints_symbolic * γ_ii
 
-        SymbolicUtils.gradient(L_ii, τ_ii)
+        SymbolicTracingUtils.gradient(L_ii, τ_ii)
     end
 
     # set up the full KKT system as an MCP
@@ -164,7 +168,7 @@ function Solver(
     ]
     upper_bounds = fill(Inf, length(lower_bounds))
 
-    mcp_problem_representation = ParametricMCPs.ParametricMCP(
+    mcp_problem_representation = IPMCPs.PrimalDualMCP(
         f_symbolic,
         z_symbolic,
         θ_symbolic,

@@ -6,12 +6,12 @@ version = "0.1.1"
 [deps]
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-ParametricMCPs = "9b992ff8-05bb-4ea1-b9d2-5ef72d82f7ad"
+MixedComplementarityProblems = "6c9e26cb-9263-41b8-a6c6-f4ca104ccdcd"
 TrajectoryGamesBase = "ac1ac542-73eb-4349-ae1b-660ab3609574"
 
 [compat]
-BlockArrays = "0.16"
+BlockArrays = "0.16, 1"
 ChainRulesCore = "1"
-ParametricMCPs = "0.1.14"
+MixedComplementarityProblems = "0.1.9"
 TrajectoryGamesBase = "0.3.6"
 julia = "1.7"
