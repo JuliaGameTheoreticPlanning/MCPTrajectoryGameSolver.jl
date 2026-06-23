@@ -14,7 +14,7 @@ This sensitivity information can be used to fit a game-theoretic model to observ
 
 Installation is as simple as running:
 
-```julia
+```
 ]add MCPTrajectoryGameSolver
 ```
 
